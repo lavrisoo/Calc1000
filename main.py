@@ -15,7 +15,7 @@ import csv
 import datetime
 from collections import Counter
 
-Window.size = (375, 667)
+#Window.size = (375, 667)
 Config.set('kivy', 'keybord_mode', 'systemanddock')
 
 Builder.load_string(
