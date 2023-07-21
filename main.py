@@ -30,24 +30,6 @@ Builder.load_string(
 <TextInput>:
     font_size: 25
     color: [0.2, 0.2, 0.2, 1]
-    canvas.before:
-        # Draw border first
-        Color:
-            rgba: [0.6, 0.6, 0.6, 1]
-        Rectangle:
-            size: self.size
-            pos: self.pos
-
-        # Draw background (covers most of the above border)
-        Color:
-            rgba: self.background_color
-        Rectangle:
-            size: (self.width - self.border[1] - self.border[3], self.height - self.border[0] - self.border[2])
-            pos: (self.x + self.border[3], self.y + self.border[0])
-
-        # set the color for the text
-        Color:
-            rgba: self.foreground_color
 <Label>:
     font_size: 18
     color: [0.2, 0.2, 0.2, 1]
@@ -60,7 +42,7 @@ Builder.load_string(
 <Button>:
     canvas:
         Color: 
-            rgba: [0.6, 0.6, 0.6, 1]
+            rgba: [0.6, 0.6, 0.6, 0.3]
     color: [1, 1, 1, 1]
 <ScrollView>:
     bar_color: [.7, .7, .7, .9]
@@ -349,14 +331,18 @@ class OldGamesForm(BoxLayout, Screen):
 
         self.boxlayout = BoxLayout(orientation="vertical", spacing=10, padding=[20])
         self.scroll = ScrollView(size_hint=[1, 0.9])
-        self.gr = GridLayout(cols=1, size_hint_y=None, height=self.minimum_height)
+        self.gr = GridLayout(cols=1, size_hint_y=None, height=self.minimum_height, row_default_height=50)
         self.gr.bind(minimum_height=self.gr.setter('height'))
 
         for i in data[::-1]:
-            self.gr.add_widget(Button(text=str(i[0]), size_hint=(1, None), height=50, on_press=self._return_old_game))
+            self.gr.add_widget(Button(text=str(i[0]), on_press=self._return_old_game))
+
+        self.popup_del = Popup(title='Удалить историю?', size_hint=(None, None), size=(300, 200))
+        self.popup_del.add_widget(Button(text='Да', padding=[40], on_press=self._del_history))
 
         self.scroll.add_widget(self.gr)
         self.boxlayout.add_widget(self.scroll)
+        self.boxlayout.add_widget(Button(text='Удалить историю', size_hint=[1, 0.1], on_press=self.popup_del.open))
         self.boxlayout.add_widget(Button(text='На главный', size_hint=[1, 0.1], on_press=self._return_main2))
         self.add_widget(self.boxlayout)
 
@@ -364,7 +350,13 @@ class OldGamesForm(BoxLayout, Screen):
         self.gr.clear_widgets()
         data = game.old_game()
         for i in data[::-1]:
-            self.gr.add_widget(Button(text=str(i[0]), size_hint=(1, None), height=50, on_press=self._return_old_game))
+            self.gr.add_widget(Button(text=str(i[0]), on_press=self._return_old_game))
+
+    def _del_history(self, *args):
+        with open('game.csv', 'w', encoding='utf-8', newline='') as file:
+            file.close()
+        self.reset_list()
+        self.popup_del.dismiss()
 
     def _return_old_game(self, instance, *args):
         t = instance.text
